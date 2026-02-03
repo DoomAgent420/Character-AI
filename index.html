@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LocalRP</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+  :root {
+    --bg: #050509;
+    --bg-elevated: #10101a;
+    --bg-elevated-soft: #151523;
+    --border-subtle: #26263a;
+    --accent: #6d5dfc;
+    --accent-soft: rgba(109,93,252,0.15);
+    --accent-strong: #8b7bff;
+    --text: #f5f5ff;
+    --text-soft: #b3b3d1;
+    --danger: #ff4b6a;
+    --radius-lg: 14px;
+    --radius-md: 10px;
+    --radius-sm: 6px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: radial-gradient(circle at top, #181830 0, #050509 55%);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* Layout */
+  #app {
+    display: flex;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Sidebar */
+  #sidebar {
+    width: 260px;
+    background: linear-gradient(180deg, #090912, #050509);
+    border-right: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    padding: 12px 10px;
+  }
+
+  #sidebarHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    margin-bottom: 6px;
+  }
+
+  #sidebarHeaderIcon {
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
+    background: radial-gradient(circle at 30% 20%, #ffffff, #8b7bff 40%, #2b1f7a 80%);
+  }
+
+  #sidebarHeaderTitle {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #sidebarHeaderTitle span:first-child {
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-soft);
+  }
+
+  #sidebarHeaderTitle span:last-child {
+    font-size: 1.05rem;
+    font-weight: 650;
+  }
+
+  #sidebarNav {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .navItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    color: var(--text-soft);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.15s ease, color 0.15s ease, transform 0.08s ease;
+  }
+
+  .navItemIcon {
+    width: 22px;
+    height: 22px;
+    border-radius: 8px;
+    background: #151523;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+  }
+
+  .navItem:hover {
+    background: rgba(255,255,255,0.03);
+    color: var(--text);
+    transform: translateY(-1px);
+  }
+
+  .navItem.active {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  .navItem.active .navItemIcon {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  #sidebarFooter {
+    margin-top: auto;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  #connectBtn {
+    width: 100%;
+    border-radius: 999px;
+    border: none;
+    padding: 7px 10px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  #connectStatus {
+    font-size: 0.75rem;
+    color: var(--text-soft);
+    padding: 0 4px;
+  }
+
+  /* Main area */
+  #main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  #mainHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 4px 4px;
+  }
+
+  #mainTitle {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #mainTitle span:first-child {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-soft);
+  }
+
+  #mainTitle span:last-child {
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  #mainHeaderRight {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .pill {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text-soft);
+  }
+
+  /* Views */
+  #views {
+    flex: 1;
+    display: flex;
+    border-radius: var(--radius-lg);
+    background: radial-gradient(circle at top left, #1b1b33 0, #10101a 40%, #070710 100%);
+    border: 1px solid rgba(255,255,255,0.06);
+    overflow: hidden;
+  }
+
+  .view {
+    flex: 1;
+    display: none;
+    padding: 14px;
+    overflow: hidden;
+  }
+
+  .view.active {
+    display: block;
+  }
+
+  /* Home view (Character.AI style) */
+  #homeView {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  #homeTopRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  #homeActions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .primaryBtn, .ghostBtn {
+    border-radius: 999px;
+    border: 1px solid transparent;
+    padding: 7px 12px;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    background: none;
+    color: var(--text);
+  }
+
+  .primaryBtn {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .ghostBtn {
+    border-color: rgba(255,255,255,0.12);
+    color: var(--text-soft);
+  }
+
+  #characterGrid {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 4px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 12px;
+  }
+
+  .charCard {
+    background: var(--bg-elevated-soft);
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+  }
+
+  .charCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+    border-color: var(--accent-soft);
+    background: #19192a;
+  }
+
+  .charPortrait {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: 12px;
+    background: radial-gradient(circle at 20% 20%, #ffffff, #8b7bff 40%, #2b1f7a 80%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .charPortraitLabel {
+    position: absolute;
+    bottom: 6px;
+    left: 6px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.55);
+    font-size: 0.7rem;
+    color: #f5f5ff;
+  }
+
+  .charMeta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .charName {
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .charDesc {
+    font-size: 0.8rem;
+    color: var(--text-soft);
+  }
+
+  .charTags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+  }
+
+  .charTag {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.04);
+    color: var(--text-soft);
+  }
+
+  /* Chat view */
+  #chatView {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  #chatHeader {
+    padding: 10px 10px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  #chatAvatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: radial-gradient(circle at 20% 20%, #ffffff, #8b7bff 40%, #2b1f7a 80%);
+  }
+
+  #chatTitle {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #chatTitle span:first-child {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  #chatTitle span:last-child {
+    font-size: 0.75rem;
+    color: var(--text-soft);
+  }
+
+  #chatLog {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 12px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .bubbleRow {
+    display: flex;
+    margin-bottom: 4px;
+  }
+
+  .bubbleRow.user {
+    justify-content: flex-end;
+  }
+
+  .bubbleRow.bot {
+    justify-content: flex-start;
+  }
+
+  .bubble {
+    max-width: 70%;
+    padding: 8px 10px;
+    border-radius: 14px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    white-space: pre-wrap;
+  }
+
+  .bubble.userBubble {
+    background: var(--accent);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+
+  .bubble.botBubble {
+    background: #181827;
+    color: var(--text);
+    border-bottom-left-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  #chatInputBar {
+    position: relative;
+    padding: 10px 12px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    background: linear-gradient(180deg, rgba(5,5,9,0.9), rgba(5,5,9,1));
+  }
+
+  #chatForm {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #10101a;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 4px 6px 4px 12px;
+  }
+
+  #chatInput {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 0.9rem;
+  }
+
+  #chatSendBtn {
+    border-radius: 999px;
+    border: none;
+    padding: 6px 12px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* Profile / Personas / Settings views (simple placeholders) */
+  .placeholderView {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 100%;
+  }
+
+  .placeholderHeader {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .placeholderText {
+    font-size: 0.85rem;
+    color: var(--text-soft);
+  }
+
+  /* Modals */
+  .modalBackdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+  }
+
+  .modal {
+    width: 480px;
+    max-width: 95vw;
+    background: #10101a;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 14px 16px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modalTitle {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .modalClose {
+    border: none;
+    background: none;
+    color: var(--text-soft);
+    cursor: pointer;
+    font-size: 1rem;
+  }
+
+  .modalBody {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .fieldLabel {
+    font-size: 0.8rem;
+    color: var(--text-soft);
+    margin-bottom: 2px;
+  }
+
+  .fieldInput, .fieldTextarea {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: #151523;
+    color: var(--text);
+    padding: 6px 8px;
+    font-size: 0.85rem;
+    resize: vertical;
+  }
+
+  .fieldTextarea {
+    min-height: 60px;
+  }
+
+  .modalFooter {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .secondaryBtn {
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.18);
+    padding: 6px 10px;
+    font-size: 0.85rem;
+    background: none;
+    color: var(--text-soft);
+    cursor: pointer;
+  }
+
+  .primaryBtnSmall {
+    border-radius: 999px;
+    border: none;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+  }
+
+  /* Scrollbars */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.12);
+    border-radius: 999px;
+  }
+</style>
+</head>
+
+<body>
+<div id="app">
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div id="sidebarHeader">
+      <div id="sidebarHeaderIcon"></div>
+      <div id="sidebarHeaderTitle">
+        <span>LocalRP</span>
+        <span>Character Engine</span>
+      </div>
+    </div>
+
+    <nav id="sidebarNav">
+      <div class="navItem active" data-view="homeView">
+        <div class="navItemIcon">🏠</div>
+        <span>Home</span>
+      </div>
+      <div class="navItem" data-view="chatView">
+        <div class="navItemIcon">💬</div>
+        <span>Chat</span>
+      </div>
+      <div class="navItem" id="openCreateCharacterNav">
+        <div class="navItemIcon">🎭</div>
+        <span>Create Character</span>
+      </div>
+      <div class="navItem" data-view="personasView">
+        <div class="navItemIcon">🧩</div>
+        <span>Personas</span>
+      </div>
+      <div class="navItem" data-view="profileView">
+        <div class="navItemIcon">👤</div>
+        <span>Profile</span>
+      </div>
+      <div class="navItem" data-view="settingsView">
+        <div class="navItemIcon">⚙️</div>
+        <span>Settings</span>
+      </div>
+    </nav>
+
+    <div id="sidebarFooter">
+      <button id="connectBtn">
+        <span>📂</span>
+        <span>Connect Character Data</span>
+      </button>
+      <div id="connectStatus">Not connected</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main id="main">
+    <header id="mainHeader">
+      <div id="mainTitle">
+        <span id="mainSubtitleText">Home</span>
+        <span id="mainTitleText">Your Characters</span>
+      </div>
+      <div id="mainHeaderRight">
+        <div class="pill">Mixtral‑ready • Local only</div>
+      </div>
+    </header>
+
+    <section id="views">
+      <!-- HOME VIEW -->
+      <div id="homeView" class="view active">
+        <div id="homeTopRow">
+          <div>
+            <div style="font-size:0.95rem;font-weight:600;">Welcome back</div>
+            <div style="font-size:0.8rem;color:var(--text-soft);">Choose a character to start chatting, or create a new one.</div>
+          </div>
+          <div id="homeActions">
+            <button class="primaryBtn" id="homeCreateCharacterBtn">🎭 Create Character</button>
+            <button class="ghostBtn" id="homeCreatePersonaBtn">🧩 Create Persona</button>
+            <button class="ghostBtn" id="homeProfileBtn">👤 Your Profile</button>
+          </div>
+        </div>
+
+        <div id="characterGrid">
+          <!-- Character cards injected here -->
+        </div>
+      </div>
+
+      <!-- CHAT VIEW -->
+      <div id="chatView" class="view">
+        <div id="chatHeader">
+          <div id="chatAvatar"></div>
+          <div id="chatTitle">
+            <span id="chatCharName">No character selected</span>
+            <span id="chatCharSubtitle">Choose a character from Home to begin.</span>
+          </div>
+        </div>
+        <div id="chatLog"></div>
+        <div id="chatInputBar">
+          <form id="chatForm">
+            <input id="chatInput" type="text" placeholder="Type a message..." autocomplete="off">
+            <button id="chatSendBtn" type="submit">
+              <span>Send</span> <span>➤</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- PERSONAS VIEW -->
+      <div id="personasView" class="view">
+        <div class="placeholderView">
+          <div class="placeholderHeader">Personas</div>
+          <div class="placeholderText">
+            Here you’ll be able to define how <strong>you</strong> present yourself to characters:
+            different moods, styles, and RP preferences.
+          </div>
+          <div class="placeholderText">
+            For now, this is a placeholder. You can still create characters and chat with them.
+          </div>
+        </div>
+      </div>
+
+      <!-- PROFILE VIEW -->
+      <div id="profileView" class="view">
+        <div class="placeholderView">
+          <div class="placeholderHeader">Your Profile</div>
+          <div class="placeholderText">
+            This page will show your name, personas, and recently used characters.
+          </div>
+          <div class="placeholderText">
+            For now, it’s a simple placeholder while we focus on the core RP experience.
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS VIEW -->
+      <div id="settingsView" class="view">
+        <div class="placeholderView">
+          <div class="placeholderHeader">Settings</div>
+          <div class="placeholderText">
+            Here you’ll eventually configure model settings, safety preferences, and performance options.
+          </div>
+          <div class="placeholderText">
+            For now, settings are not wired — the main focus is the UI and character system.
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- CHARACTER CREATION MODAL -->
+<div id="characterModalBackdrop" class="modalBackdrop">
+  <div class="modal">
+    <div class="modalHeader">
+      <div class="modalTitle">Create Character</div>
+      <button class="modalClose" id="closeCharacterModalBtn">✕</button>
+    </div>
+    <div class="modalBody">
+      <div>
+        <div class="fieldLabel">Name</div>
+        <input id="charNameInput" class="fieldInput" placeholder="Yuri, Demon Lord, Catgirl, etc.">
+      </div>
+      <div>
+        <div class="fieldLabel">Short Description</div>
+        <input id="charDescInput" class="fieldInput" placeholder="A shy, obsessive bookworm with a dark side.">
+      </div>
+      <div>
+        <div class="fieldLabel">Personality</div>
+        <textarea id="charPersonalityInput" class="fieldTextarea" placeholder="Shy, introspective, obsessive, poetic, easily flustered, deeply attached."></textarea>
+      </div>
+      <div>
+        <div class="fieldLabel">Speaking Style</div>
+        <textarea id="charStyleInput" class="fieldTextarea" placeholder="Long, nervous sentences with literary metaphors, hesitations, and occasional dark undertones."></textarea>
+      </div>
+      <div>
+        <div class="fieldLabel">Example Messages</div>
+        <textarea id="charExamplesInput" class="fieldTextarea" placeholder="Write 2–3 example lines they might say. This helps the AI lock in their voice."></textarea>
+      </div>
+    </div>
+    <div class="modalFooter">
+      <button class="secondaryBtn" id="cancelCharacterModalBtn">Cancel</button>
+      <button class="primaryBtnSmall" id="saveCharacterBtn">Save Character</button>
+    </div>
+  </div>
+</div>
+
+<!-- PERSONA CREATION MODAL (placeholder) -->
+<div id="personaModalBackdrop" class="modalBackdrop">
+  <div class="modal">
+    <div class="modalHeader">
+      <div class="modalTitle">Create Persona</div>
+      <button class="modalClose" id="closePersonaModalBtn">✕</button>
+    </div>
+    <div class="modalBody">
+      <div class="fieldLabel">Persona Name</div>
+      <input id="personaNameInput" class="fieldInput" placeholder="Your RP persona name.">
+      <div class="fieldLabel">How you speak</div>
+      <textarea id="personaStyleInput" class="fieldTextarea" placeholder="Describe how you talk, react, and behave in RP."></textarea>
+      <div class="fieldLabel">Notes</div>
+      <textarea id="personaNotesInput" class="fieldTextarea" placeholder="Anything characters should know about you."></textarea>
+    </div>
+    <div class="modalFooter">
+      <button class="secondaryBtn" id="cancelPersonaModalBtn">Cancel</button>
+      <button class="primaryBtnSmall" id="savePersonaBtn">Save Persona (not wired yet)</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ------------------------------
+     STATE
+  ------------------------------ */
+  let dataDir = null;
+  let charDir = null;
+  let activeCharacter = null;
+  let chatHistory = []; // {role, text}
+
+  const navItems = document.querySelectorAll(".navItem[data-view]");
+  const views = document.querySelectorAll(".view");
+  const mainSubtitleText = document.getElementById("mainSubtitleText");
+  const mainTitleText = document.getElementById("mainTitleText");
+
+  const characterGrid = document.getElementById("characterGrid");
+  const connectBtn = document.getElementById("connectBtn");
+  const connectStatus = document.getElementById("connectStatus");
+
+  const chatView = document.getElementById("chatView");
+  const chatLog = document.getElementById("chatLog");
+  const chatCharName = document.getElementById("chatCharName");
+  const chatCharSubtitle = document.getElementById("chatCharSubtitle");
+  const chatForm = document.getElementById("chatForm");
+  const chatInput = document.getElementById("chatInput");
+
+  const characterModalBackdrop = document.getElementById("characterModalBackdrop");
+  const closeCharacterModalBtn = document.getElementById("closeCharacterModalBtn");
+  const cancelCharacterModalBtn = document.getElementById("cancelCharacterModalBtn");
+  const saveCharacterBtn = document.getElementById("saveCharacterBtn");
+
+  const charNameInput = document.getElementById("charNameInput");
+  const charDescInput = document.getElementById("charDescInput");
+  const charPersonalityInput = document.getElementById("charPersonalityInput");
+  const charStyleInput = document.getElementById("charStyleInput");
+  const charExamplesInput = document.getElementById("charExamplesInput");
+
+  const personaModalBackdrop = document.getElementById("personaModalBackdrop");
+  const closePersonaModalBtn = document.getElementById("closePersonaModalBtn");
+  const cancelPersonaModalBtn = document.getElementById("cancelPersonaModalBtn");
+
+  /* ------------------------------
+     NAVIGATION
+  ------------------------------ */
+  function setActiveView(viewId) {
+    views.forEach(v => v.classList.remove("active"));
+    const view = document.getElementById(viewId);
+    if (view) view.classList.add("active");
+
+    navItems.forEach(item => {
+      if (item.dataset.view === viewId) item.classList.add("active");
+      else item.classList.remove("active");
+    });
+
+    switch (viewId) {
+      case "homeView":
+        mainSubtitleText.textContent = "Home";
+        mainTitleText.textContent = "Your Characters";
+        break;
+      case "chatView":
+        mainSubtitleText.textContent = "Chat";
+        mainTitleText.textContent = activeCharacter ? activeCharacter.name : "No Character Selected";
+        break;
+      case "personasView":
+        mainSubtitleText.textContent = "Personas";
+        mainTitleText.textContent = "How You Show Up";
+        break;
+      case "profileView":
+        mainSubtitleText.textContent = "Profile";
+        mainTitleText.textContent = "Your Space";
+        break;
+      case "settingsView":
+        mainSubtitleText.textContent = "Settings";
+        mainTitleText.textContent = "Configuration";
+        break;
+    }
+  }
+
+  navItems.forEach(item => {
+    item.addEventListener("click", () => {
+      const viewId = item.dataset.view;
+      if (viewId) setActiveView(viewId);
+    });
+  });
+
+  document.getElementById("homeCreateCharacterBtn").onclick = () => {
+    openCharacterModal();
+  };
+  document.getElementById("homeCreatePersonaBtn").onclick = () => {
+    openPersonaModal();
+  };
+  document.getElementById("homeProfileBtn").onclick = () => {
+    setActiveView("profileView");
+  };
+  document.getElementById("openCreateCharacterNav").onclick = () => {
+    openCharacterModal();
+  };
+
+  /* ------------------------------
+     FILE SYSTEM CONNECTION
+  ------------------------------ */
+  connectBtn.onclick = async () => {
+    try {
+      // Browser will open a picker; you can navigate to:
+      // C:\69 God\LocalRP\Data\Character Data
+      const rootDir = await window.showDirectoryPicker();
+      dataDir = rootDir;
+      charDir = rootDir; // assume user picks Character Data directly
+
+      connectStatus.textContent = "Connected to Character Data";
+      connectStatus.style.color = "#8bffb0";
+
+      await loadCharacters();
+    } catch (e) {
+      console.error(e);
+      connectStatus.textContent = "Connection cancelled or failed";
+      connectStatus.style.color = "#ff9aa5";
+    }
+  };
+
+  /* ------------------------------
+     CHARACTER LOADING
+  ------------------------------ */
+  async function loadCharacters() {
+    characterGrid.innerHTML = "";
+
+    if (!charDir) {
+      const msg = document.createElement("div");
+      msg.style.fontSize = "0.85rem";
+      msg.style.color = "var(--text-soft)";
+      msg.textContent = "Connect your Character Data folder to load characters.";
+      characterGrid.appendChild(msg);
+      return;
+    }
+
+    try {
+      for await (const entry of charDir.values()) {
+        if (entry.kind === "file" && entry.name.endsWith(".json")) {
+          const file = await entry.getFile();
+          const text = await file.text();
+          let char;
+          try {
+            char = JSON.parse(text);
+          } catch {
+            continue;
+          }
+          renderCharacterCard(char);
+        }
+      }
+
+      if (!characterGrid.children.length) {
+        const msg = document.createElement("div");
+        msg.style.fontSize = "0.85rem";
+        msg.style.color = "var(--text-soft)";
+        msg.textContent = "No characters found yet. Create one to get started.";
+        characterGrid.appendChild(msg);
+      }
+    } catch (e) {
+      console.error(e);
+      const msg = document.createElement("div");
+      msg.style.fontSize = "0.85rem";
+      msg.style.color = "var(--text-soft)";
+      msg.textContent = "Failed to read characters from this folder.";
+      characterGrid.appendChild(msg);
+    }
+  }
+
+  function renderCharacterCard(char) {
+    const card = document.createElement("div");
+    card.className = "charCard";
+
+    const portrait = document.createElement("div");
+    portrait.className = "charPortrait";
+    const portraitLabel = document.createElement("div");
+    portraitLabel.className = "charPortraitLabel";
+    portraitLabel.textContent = char.name || "Character";
+    portrait.appendChild(portraitLabel);
+
+    const meta = document.createElement("div");
+    meta.className = "charMeta";
+
+    const nameEl = document.createElement("div");
+    nameEl.className = "charName";
+    nameEl.textContent = char.name || "Unnamed";
+
+    const descEl = document.createElement("div");
+    descEl.className = "charDesc";
+    descEl.textContent = char.description || "No description provided.";
+
+    const tags = document.createElement("div");
+    tags.className = "charTags";
+
+    if (char.personality) {
+      const tag = document.createElement("div");
+      tag.className = "charTag";
+      tag.textContent = "Personality";
+      tags.appendChild(tag);
+    }
+    if (char.style) {
+      const tag = document.createElement("div");
+      tag.className = "charTag";
+      tag.textContent = "Style";
+      tags.appendChild(tag);
+    }
+
+    meta.appendChild(nameEl);
+    meta.appendChild(descEl);
+    meta.appendChild(tags);
+
+    card.appendChild(portrait);
+    card.appendChild(meta);
+
+    card.onclick = () => {
+      openChatWithCharacter(char);
+    };
+
+    characterGrid.appendChild(card);
+  }
+
+  /* ------------------------------
+     CHARACTER CREATION
+  ------------------------------ */
+  function openCharacterModal() {
+    characterModalBackdrop.style.display = "flex";
+  }
+
+  function closeCharacterModal() {
+    characterModalBackdrop.style.display = "none";
+    charNameInput.value = "";
+    charDescInput.value = "";
+    charPersonalityInput.value = "";
+    charStyleInput.value = "";
+    charExamplesInput.value = "";
+  }
+
+  closeCharacterModalBtn.onclick = closeCharacterModal;
+  cancelCharacterModalBtn.onclick = closeCharacterModal;
+
+  saveCharacterBtn.onclick = async () => {
+    if (!charDir) {
+      alert("Connect your Character Data folder first.");
+      return;
+    }
+
+    const name = charNameInput.value.trim() || "Unnamed";
+    const description = charDescInput.value.trim();
+    const personality = charPersonalityInput.value.trim();
+    const style = charStyleInput.value.trim();
+    const examples = charExamplesInput.value.trim();
+
+    const char = {
+      id: crypto.randomUUID(),
+      name,
+      description,
+      personality,
+      style,
+      examples
+    };
+
+    try {
+      const fileHandle = await charDir.getFileHandle(`${char.id}.json`, { create: true });
+      const writable = await fileHandle.createWritable();
+      await writable.write(JSON.stringify(char, null, 2));
+      await writable.close();
+
+      closeCharacterModal();
+      await loadCharacters();
+    } catch (e) {
+      console.error(e);
+      alert("Failed to save character.");
+    }
+  };
+
+  /* ------------------------------
+     PERSONA MODAL (placeholder)
+  ------------------------------ */
+  function openPersonaModal() {
+    personaModalBackdrop.style.display = "flex";
+  }
+
+  function closePersonaModal() {
+    personaModalBackdrop.style.display = "none";
+  }
+
+  closePersonaModalBtn.onclick = closePersonaModal;
+  cancelPersonaModalBtn.onclick = closePersonaModal;
+
+  /* ------------------------------
+     CHAT
+  ------------------------------ */
+  function openChatWithCharacter(char) {
+    activeCharacter = char;
+    chatHistory = [];
+
+    chatCharName.textContent = char.name || "Character";
+    chatCharSubtitle.textContent = char.description || "In character chat.";
+    chatLog.innerHTML = "";
+
+    setActiveView("chatView");
+  }
+
+  function addBubble(role, text) {
+    const row = document.createElement("div");
+    row.className = "bubbleRow " + (role === "user" ? "user" : "bot");
+
+    const bubble = document.createElement("div");
+    bubble.className = "bubble " + (role === "user" ? "userBubble" : "botBubble");
+    bubble.textContent = text;
+
+    row.appendChild(bubble);
+    chatLog.appendChild(row);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
+
+  chatForm.onsubmit = async (e) => {
+    e.preventDefault();
+    if (!activeCharacter) {
+      alert("Choose a character from Home first.");
+      return;
+    }
+
+    const text = chatInput.value.trim();
+    if (!text) return;
+
+    addBubble("user", text);
+    chatHistory.push({ role: "user", text });
+    chatInput.value = "";
+
+    // Placeholder: call to backend Mixtral endpoint
+    // For now, we simulate a response so the UI works.
+    // Later, replace this with a real fetch to your local model server.
+    addBubble("bot", generatePlaceholderReply(text, activeCharacter));
+    chatHistory.push({ role: "bot", text: generatePlaceholderReply(text, activeCharacter) });
+  };
+
+  // Temporary placeholder reply generator (so UI isn't dead)
+  function generatePlaceholderReply(userMessage, character) {
+    const name = character.name || "They";
+    const personality = character.personality || "";
+    const style = character.style || "";
+
+    const openers = [
+      `${name} takes a moment before responding.`,
+      `${name} hesitates, then answers softly.`,
+      `${name} shifts their weight, thinking about your words.`,
+      `${name}'s expression changes slightly as they reply.`,
+      `${name} lets a small silence hang in the air first.`
+    ];
+
+    const reflections = [
+      `They can't help but filter your words through their ${personality.toLowerCase() || "own"} nature.`,
+      `Whatever they say next is colored by the way they see the world.`,
+      `It's obvious that your message hit something in them.`,
+      `There's a trace of something unspoken behind their response.`,
+      `You can tell they're not just answering automatically.`
+    ];
+
+    const styleLine = style
+      ? `They speak in their usual way: ${style.toLowerCase()}.`
+      : `They speak in a way that feels distinctly theirs.`;
+
+    const direct = `“About what you said — ${userMessage} — I can't just ignore that.”`;
+
+    return `${openers[Math.floor(Math.random() * openers.length)]} ${reflections[Math.floor(Math.random() * reflections.length)]} ${styleLine} ${direct}`;
+  }
+
+  // Default view
+  setActiveView("homeView");
+</script>
+</body>
+</html>
